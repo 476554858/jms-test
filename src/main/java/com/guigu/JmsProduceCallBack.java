@@ -1,10 +1,13 @@
 package com.guigu;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.ActiveMQMessageProducer;
+import org.apache.activemq.AsyncCallback;
 
 import javax.jms.*;
+import java.util.UUID;
 
-public class JmsProduce {
+public class JmsProduceCallBack {
 //    private static final String url="nio://127.0.0.1:61618";
 //    private static final String url="nio://127.0.0.1:61608";
     private static final String url="tcp://127.0.0.1:61608";
@@ -19,20 +22,26 @@ public class JmsProduce {
 
         Session session = connection.createSession(false,Session.AUTO_ACKNOWLEDGE);
         Queue queue = session.createQueue(QUEUE_NAME);
-        MessageProducer messageProducer = session.createProducer(queue);
-        messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+        ActiveMQMessageProducer activeMQMessageProducer = (ActiveMQMessageProducer)session.createProducer(queue);
+        activeMQMessageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
         for(int i = 1;i<=3;i++){
            TextMessage textMessage = session.createTextMessage("text msg:"+i);
            textMessage.setStringProperty("key","vip");
-           messageProducer.send(textMessage);
+           final String messageID = UUID.randomUUID()+"order";
+           textMessage.setJMSMessageID(messageID);
+           activeMQMessageProducer.send(textMessage, new AsyncCallback() {
+               public void onSuccess() {
+                   System.out.println(messageID+"send success");
+               }
 
+               public void onException(JMSException e) {
+                   System.out.println(messageID+"send faild");
+               }
+           });
 
-           MapMessage mapMessage = session.createMapMessage();
-           mapMessage.setString("k1","mapMessge---v");
-           messageProducer.send(mapMessage);
         }
-        messageProducer.close();
+        activeMQMessageProducer.close();
         session.close();
         connection.close();
         System.out.println("***消息发布到MQ完成");

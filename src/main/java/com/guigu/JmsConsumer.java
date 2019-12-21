@@ -5,7 +5,10 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import javax.jms.*;
 
 public class JmsConsumer {
-    private static final String url="nio://127.0.0.1:61618";
+//    private static final String url="nio://127.0.0.1:61618";
+//    private static final String url="nio://127.0.0.1:61608";
+    private static final String url="tcp://127.0.0.1:61608";
+//    private static final String url="failover:(tc p://127.0.0.1:61616,tcp://127.0.0.1:61617,tcp://127.0.0.1:61618)?randomize=false";
     private static final String QUEUE_NAME = "queue";
 
     public static void main(String[] args) throws Exception{
